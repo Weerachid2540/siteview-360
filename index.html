@@ -19,6 +19,7 @@
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#1a1c1e; } }
 :root[data-theme="dark"]{ --bg:#1a1c1e; }
 *,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none}
 #stage{position:fixed;inset:0;touch-action:none;cursor:grab}
@@ -163,7 +164,8 @@ canvas{display:block;width:100%;height:100%}
 window.DRIVE_CONFIG = {
   API_KEY:   'AIzaSyBG4AQWcC3MCPBguqXik-yJgmgDPna_2I0',                               // API key (เปิด Drive API) — พอสำหรับโฟลเดอร์ที่แชร์แบบ "ทุกคนที่มีลิงก์"
   CLIENT_ID: 'YOUR_CLIENT_ID.apps.googleusercontent.com', // ใช้เมื่อโฟลเดอร์ไม่เปิดสาธารณะ (ล็อกอิน Google, scope drive.readonly)
-  DEFAULT_FOLDER: ''                                       // วางลิงก์โฟลเดอร์บริษัทไว้ที่นี่ ทีมเปิดเว็บแล้วเจอเลย
+  DEFAULT_FOLDER: 'https://drive.google.com/drive/folders/10L7lLKOrBJFp_zcJoEmhpMfQsApy9AeX', // โฟลเดอร์ 0. รูป 360 องศา
+  LOCK_FOLDER: true                                        // true = ใช้โฟลเดอร์นี้เสมอ ซ่อนปุ่มเปลี่ยนลิงก์
 };
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -543,6 +545,14 @@ const fmtDate = t => new Date(t).toLocaleDateString('th-TH', { day:'numeric', mo
 const folderIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
 
 function showLinkForm(msg){
+  if (lockedId){
+    crumbs.innerHTML = '<span>Google Drive</span>';
+    body.innerHTML = '<div class="empty"></div>';
+    body.firstChild.textContent = msg || 'เชื่อมโฟลเดอร์ไม่ได้';
+    const b = document.createElement('button'); b.className = 'btn'; b.textContent = 'ลองใหม่'; b.style.justifySelf = 'start';
+    b.onclick = () => connect(lockedId); body.appendChild(b);
+    return;
+  }
   crumbs.innerHTML = '<span>เชื่อมโฟลเดอร์ Google Drive</span>';
   body.innerHTML = `<form class="linkform" id="linkForm">
     <div class="empty">${msg || 'วางลิงก์โฟลเดอร์ Google Drive ที่ทีมใช้อัปรูป 360'}</div>
@@ -555,7 +565,7 @@ function showLinkForm(msg){
   };
 }
 async function connect(id){
-  rootId = id; path = []; store('sv360.folder', id);
+  rootId = id; path = []; if (!lockedId) store('sv360.folder', id);
   body.innerHTML = '<div class="empty">กำลังเชื่อม…</div>';
   try {
     const meta = await api(`${API}/${id}?fields=name,mimeType`);
@@ -638,7 +648,9 @@ $('linkBtn').onclick = () => showLinkForm();
 addEventListener('keydown', e => { if (e.key === 'Escape') sheet.classList.remove('on'); });
 
 // โฟลเดอร์เริ่มต้น: ?folder=ลิงก์หรือID  >  ที่เคยเชื่อมไว้  >  DEFAULT_FOLDER
-rootId = parseFolderId(new URLSearchParams(location.search).get('folder')) || load('sv360.folder') || parseFolderId(DC.DEFAULT_FOLDER);
+const lockedId = DC.LOCK_FOLDER ? parseFolderId(DC.DEFAULT_FOLDER) : null;
+if (lockedId){ $('linkBtn').hidden = true; store('sv360.folder', null); }
+rootId = lockedId || parseFolderId(new URLSearchParams(location.search).get('folder')) || load('sv360.folder') || parseFolderId(DC.DEFAULT_FOLDER);
 if (rootId && (hasKey || hasClient)) setTimeout(() => { sheet.classList.add('on'); connect(rootId); }, 300);
 
 // start
