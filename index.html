@@ -66,7 +66,7 @@ canvas{display:block;width:100%;height:100%}
   font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none}
 .toast.on{opacity:1}
 /* Drive folder browser */
-.sheet{position:fixed;left:0;right:0;bottom:0;max-height:62%;display:none;flex-direction:column;
+.sheet{position:fixed;left:0;right:0;bottom:0;height:85%;display:none;flex-direction:column;
   background:rgba(22,24,27,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   border-top:1px solid var(--glass-line);border-radius:16px 16px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
 .sheet.on{display:flex}
@@ -76,14 +76,15 @@ canvas{display:block;width:100%;height:100%}
 .crumbs button:last-child{color:var(--ink);font-weight:600}
 .crumbs span{color:var(--muted)}
 .sheet .btn{height:36px;min-width:36px;padding:0 10px}
-.sheet-body{overflow-y:auto;padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.sheet-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));grid-auto-rows:max-content;align-content:start;gap:14px}
 .item{appearance:none;border:1px solid var(--glass-line);background:rgba(255,255,255,.04);color:var(--ink);font:inherit;
-  border-radius:10px;padding:0;overflow:hidden;cursor:pointer;text-align:left;display:flex;flex-direction:column}
+  border-radius:12px;padding:0;overflow:hidden;cursor:pointer;text-align:left;display:flex;flex-direction:column;flex-shrink:0}
 .item .pic{aspect-ratio:2/1;background:#2a2d31 center/cover no-repeat;position:relative}
-.item .pic b{position:absolute;right:6px;top:6px;font-size:11px;padding:2px 6px;border-radius:6px;background:var(--accent);color:#1a1c1e}
-.item .nm{padding:6px 8px 2px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item .dt{padding:0 8px 7px;font-size:12px;color:var(--muted)}
-.item.folder{flex-direction:row;align-items:center;gap:8px;padding:12px}
+.item .pic b{position:absolute;right:8px;top:8px;font-size:12px;padding:3px 8px;border-radius:6px;background:var(--accent);color:#1a1c1e}
+.item .nm{padding:8px 10px 2px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .dt{padding:0 10px 9px;font-size:12px;color:var(--muted)}
+.item.folder{flex-direction:row;align-items:center;gap:10px;padding:14px}
+.item.folder .nm{padding:0}
 .item.folder svg{flex:0 0 22px;height:22px;color:var(--accent)}
 .item:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .empty{grid-column:1/-1;color:var(--muted);font-size:14px;padding:8px 2px;line-height:1.6}
@@ -536,7 +537,7 @@ async function renderFolder(){
       if (f.thumbnailLink){
         const im = new Image(); im.referrerPolicy = 'no-referrer';
         im.onload = () => { el.querySelector('.pic').style.backgroundImage = `url("${im.src}")`; };
-        im.src = f.thumbnailLink.replace(/=s\d+$/, '=s400');
+        im.src = f.thumbnailLink.replace(/=s\d+$/, '=s800');
       }
       el.onclick = () => openDriveImage(f);
     }
